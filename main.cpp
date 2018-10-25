@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <string.h>
 #include "loadpng.h"
 #include <algorithm>
 #include <iterator>
@@ -13,18 +14,24 @@ std::vector<int> MakeBW(const std::vector<unsigned char> image);
 std::vector<int> CropImage(const std::vector<int> bwImage,int w, int h, int nW, int nH);
 std::vector<int> ImageReduce(const std::vector<int> image, int newImageWidth, int newImageHeight, int numOfElem);
 std::vector<char> Map(const std::vector<int> input);
-void WriteToFile(std::vector<char> image, int imageWidth);
+void WriteToFile(std::vector<char> image, int imageWidth, const char* filename);
 
 
 int main(int argc, const char * argv[]) {
     
     //Filename
-    const char* filename = "images/r2d22.png";
+    const char* filename = "r2d2";
+    char str[80];
+    strcpy(str, "images/");
+    strcat(str, filename);
+    strcat(str, ".png");
+    
+   
     
     // 1. Original image capture
     std::vector<unsigned char> image;
     unsigned width, height;
-    unsigned error = lodepng::decode(image, width, height, filename);
+    unsigned error = lodepng::decode(image, width, height, str);
     if(error) {
         std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << "\n\n";
         return 0;
@@ -55,19 +62,17 @@ int main(int argc, const char * argv[]) {
 
     
     // 6. Drawing in a file - Main output
-    WriteToFile(output, newWidth / 4);
+    WriteToFile(output, newWidth / 4, filename);
     
     // Reporting
-    printf("INPUT file: %s, OUTPUT file: PixelsAscii.txt\n\n", filename);
-    printf("ORIGINAL file width: %d, height %d, pixels: %d\n", width, height, (int)image.size() / 4);
-    printf("BLACK & WHITE file width: %d, height %d, pixels: %d\n", width, height, (int)bwImage.size() );
-    printf("CROPPED file width: %d, height %d, pixels: %d\n", newWidth, newHeight, (int)croppedImage.size() );
-    printf("REDUCED file width: %d, height %d, pixels: %d\n", newWidth / 4, newHeight / 7, (int)reducedImage.size() );
-    printf("MAPPED to ASCII vector<char> size is %d\n", (int)output.size() );
+    printf(" INPUT file: %s.png\n OUTPUT file: %s.txt\n\n", filename, filename);
+    printf(" ORIGINAL file width: %d, height %d, pixels: %d\n", width, height, (int)image.size() / 4);
+    printf(" BLACK & WHITE file width: %d, height %d, pixels: %d\n", width, height, (int)bwImage.size() );
+    printf(" CROPPED file width: %d, height %d, pixels: %d\n", newWidth, newHeight, (int)croppedImage.size() );
+    printf(" REDUCED file width: %d, height %d, pixels: %d\n", newWidth / 4, newHeight / 7, (int)reducedImage.size() );
+    printf(" MAPPED to ASCII vector<char> size is %d\n", (int)output.size() );
     return 0;
 }
-
-
 
 
 
@@ -163,8 +168,13 @@ std::vector<char> Map(const std::vector<int> image){
 
 
 // Drawing in a file - Main output
-void WriteToFile(std::vector<char> image, int imageWidth){
-    std::ofstream myfile ("PixelsAscii.txt");
+void WriteToFile(std::vector<char> image, int imageWidth, const char* filename){
+    char str[80];
+    strcpy(str, "images/");
+    strcat(str, filename);
+    strcat(str, ".txt");
+    
+    std::ofstream myfile (str);
     
     if(myfile.is_open())
     {
