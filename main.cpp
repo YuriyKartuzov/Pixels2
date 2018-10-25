@@ -2,7 +2,6 @@
 // Alex Kong, Dmytro Sych, Yuriy Kartuzov
 
 #include <iostream>
-#include <unistd.h>
 #include <fstream>
 #include <math.h>
 #include "loadpng.h"
@@ -20,7 +19,7 @@ void WriteToFile(std::vector<char> image, int imageWidth);
 int main(int argc, const char * argv[]) {
     
     //Filename
-    const char* filename = "wave.png";
+    const char* filename = "images/r2d22.png";
     
     // 1. Original image capture
     std::vector<unsigned char> image;
@@ -50,7 +49,6 @@ int main(int argc, const char * argv[]) {
     // 4. Reducing an image to multiple of 4:7
     std::vector<int> reducedImage = ImageReduce(croppedImage, newWidth, newHeight, newNumElem);
 
-    
     
     // 5. Mapping happens here
     std::vector<char> output = Map(reducedImage);
@@ -107,7 +105,7 @@ std::vector<int> CropImage(const std::vector<int> bwImage, int width, int height
 std::vector<int> ImageReduce(const std::vector<int> image, int width, int height, int numElem){
     
     std::vector<int> reducedImage;
-    int xP = 0;
+    int xP = 0; // an unfortunate name for a variable, what's the better name for it??
     int sum = 0;
     
     // Row block treversal
@@ -118,14 +116,20 @@ std::vector<int> ImageReduce(const std::vector<int> image, int width, int height
             
             // Rows traversal
             for(int i = 0; i < 7; i++){
+                
                 // Colomn treversal
                 for(int j = 0; j < 4; j++){
                     sum += image.at(xP + j);
                 }
+                
                 xP += width;
             }
             
-            reducedImage.push_back( (int)(sum / (4 * 7)) );
+            // recording 4 * 7 pixels average
+            int average = (int)sum / (4 * 7);
+            reducedImage.push_back( average );
+            
+            // reposition & reset
             sum = 0;
             xP = xP - ( 7 * width) + 4; // ход конем
         }
@@ -144,13 +148,13 @@ std::vector<char> Map(const std::vector<int> image){
     // Original 10 char {'@', '%', '#', '*', '+', '=', '-', ':', '.', ' ',' ' };
 
     // Special blend of 14 chars, mee-favourite :)
-    char map3[] {'W', '#', '@', '0', '&', '%', '*', 'z', '=', '+', '_', ',', '.', ' ' };
+    char map[] {'W', '#', '@', '0', '&', '%', '*', 'z', '=', '+', '_', ',', '.', ' ' };
     
     std::vector<char> output;
     
     for(int i=0; i< image.size(); i++){
         int pixel = image.at(i);
-        char character = map3[int(floor(pixel / (255 / (sizeof(map3) - 1))))];
+        char character = map[int(floor(pixel / (255 / (sizeof(map) - 1))))];
         output.push_back(character);
     }
     return output;
