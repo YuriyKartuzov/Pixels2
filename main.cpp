@@ -19,10 +19,10 @@ void WriteToFile(std::vector<char> image, int imageWidth);
 
 int main(int argc, const char * argv[]) {
     
-    // 1. Filename
+    //Filename
     const char* filename = "wizzard.png";
     
-    // 2. Original image capture
+    // 1. Original image capture
     std::vector<unsigned char> image;
     unsigned width, height;
     unsigned error = lodepng::decode(image, width, height, filename);
@@ -32,7 +32,7 @@ int main(int argc, const char * argv[]) {
     }
     
     
-    // 3. Getting Black and White Image
+    // 2. Getting Black and White Image
     std::vector<int> bwImage = MakeBW(image);
     
     
@@ -40,26 +40,26 @@ int main(int argc, const char * argv[]) {
 #define Xratio 4
 #define Yratio 7
     
-    // 4. Cropping Image
+    // 3. Cropping Image
     int newWidth = (4 * (int)(width / 4));
     int newHeight = (7 * (int)(height / 7));
     int newNumElem = (newWidth / 4) * (newHeight / 7);
     std::vector<int> croppedImage = CropImage(bwImage, width, height, newWidth, newHeight);
     
     
-    // 5. Reducing an image to multiple of 4:7
+    // 4. Reducing an image to multiple of 4:7
     std::vector<int> reducedImage = ImageReduce(croppedImage, newWidth, newHeight, newNumElem);
 
     
     
-    // 6. Mapping happens here
+    // 5. Mapping happens here
     std::vector<char> output = Map(reducedImage);
 
     
-    // 7. Drawing in a file - Main output
+    // 6. Drawing in a file - Main output
     WriteToFile(output, newWidth / 4);
     
-    // 8. Report
+    // Reporting
     printf("INPUT file: %s, OUTPUT file: PixelsAscii.txt\n\n", filename);
     printf("ORIGINAL file width: %d, height %d, pixels: %d\n", width, height, (int)image.size());
     printf("BLACK & WHITE file width: %d, height %d, pixels: %d\n", width, height, (int)bwImage.size() );
