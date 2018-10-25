@@ -20,7 +20,7 @@ void WriteToFile(std::vector<char> image, int imageWidth);
 int main(int argc, const char * argv[]) {
     
     //Filename
-    const char* filename = "wizzard.png";
+    const char* filename = "wave.png";
     
     // 1. Original image capture
     std::vector<unsigned char> image;
@@ -61,7 +61,7 @@ int main(int argc, const char * argv[]) {
     
     // Reporting
     printf("INPUT file: %s, OUTPUT file: PixelsAscii.txt\n\n", filename);
-    printf("ORIGINAL file width: %d, height %d, pixels: %d\n", width, height, (int)image.size());
+    printf("ORIGINAL file width: %d, height %d, pixels: %d\n", width, height, (int)image.size() / 4);
     printf("BLACK & WHITE file width: %d, height %d, pixels: %d\n", width, height, (int)bwImage.size() );
     printf("CROPPED file width: %d, height %d, pixels: %d\n", newWidth, newHeight, (int)croppedImage.size() );
     printf("REDUCED file width: %d, height %d, pixels: %d\n", newWidth / 4, newHeight / 7, (int)reducedImage.size() );
@@ -88,7 +88,7 @@ std::vector<int> MakeBW(std::vector<unsigned char> image){
 
 
 
-// Cropping an Image so that width is multiple of 4 and height of 7 TODO
+// Cropping an Image so that width is multiple of 4 and height of 7
 std::vector<int> CropImage(const std::vector<int> bwImage, int width, int height, int newWidth, int newHeight){
     std::vector<int> croppedImage;
     std::vector<int>::const_iterator current = bwImage.begin();
@@ -110,13 +110,15 @@ std::vector<int> ImageReduce(const std::vector<int> image, int width, int height
     int xP = 0;
     int sum = 0;
     
-    // Row treversal skip
+    // Row block treversal
     for(int y = 0; xP < image.size() - (7 * width); y++){
         
-        // Colomn skip
+        // Colomn block treversal
         for(int x = 0; x < (width / 4); x++){
             
+            // Rows traversal
             for(int i = 0; i < 7; i++){
+                // Colomn treversal
                 for(int j = 0; j < 4; j++){
                     sum += image.at(xP + j);
                 }
@@ -125,7 +127,7 @@ std::vector<int> ImageReduce(const std::vector<int> image, int width, int height
             
             reducedImage.push_back( (int)(sum / (4 * 7)) );
             sum = 0;
-            xP = xP - ( 7 * width) + 4;
+            xP = xP - ( 7 * width) + 4; // ход конем
         }
         
 
