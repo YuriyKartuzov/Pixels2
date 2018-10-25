@@ -150,7 +150,7 @@ std::vector<char> Map(const std::vector<int> image){
     
     for(int i=0; i< image.size(); i++){
         int pixel = image.at(i);
-        char character = map3[int(ceil(pixel / (255 / (sizeof(map3) - 1))))];
+        char character = map3[int(floor(pixel / (255 / (sizeof(map3) - 1))))];
         output.push_back(character);
     }
     return output;
