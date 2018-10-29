@@ -10,23 +10,21 @@
 #include <iterator>
 
 // Prototypes
-std::vector<int> MakeBW(const std::vector<unsigned char> image);
-std::vector<int> CropImage(const std::vector<int> bwImage,int w, int h, int nW, int nH);
-std::vector<int> ImageReduce(const std::vector<int> image, int newImageWidth, int newImageHeight, int numOfElem);
-std::vector<char> Map(const std::vector<int> input);
+std::vector<int> MakeBW(std::vector<unsigned char> image);
+std::vector<int> CropImage(const std::vector<int> bwImage, int width, int height, int newWidth, int newHeight);
+std::vector<char> ReduceAndMap(const std::vector<int> image, int newImageWidth, int newImageHeight, int xratio, int yratio);
+char pixelToChar(int pixel);
 void WriteToFile(std::vector<char> image, int imageWidth, const char* filename);
 
 
 int main(int argc, const char * argv[]) {
     
     //Filename
-    const char* filename = "r2d2";
+    const char* filename = "largeFile";
     char str[80];
     strcpy(str, "images/");
     strcat(str, filename);
     strcat(str, ".png");
-    
-   
     
     // 1. Original image capture
     std::vector<unsigned char> image;
@@ -36,45 +34,48 @@ int main(int argc, const char * argv[]) {
         std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << "\n\n";
         return 0;
     }
-    
-    
-    // 2. Getting Black and White Image
-    std::vector<int> bwImage = MakeBW(image);
-    
-    
-    //TODO: add dynamic ratio scaling
-#define Xratio 4
-#define Yratio 7
-    
-    // 3. Cropping Image
-    int newWidth = (4 * (int)(width / 4));
-    int newHeight = (7 * (int)(height / 7));
-    int newNumElem = (newWidth / 4) * (newHeight / 7);
-    std::vector<int> croppedImage = CropImage(bwImage, width, height, newWidth, newHeight);
-    
-    
-    // 4. Reducing an image to multiple of 4:7
-    std::vector<int> reducedImage = ImageReduce(croppedImage, newWidth, newHeight, newNumElem);
+    if(width < 800 || height < 500){
+        std::cout << "The file of too small of a resolution, please upload a bigger file";
+        return 0;
+    }
+
+    // 2. Make BW
+    std::vector<int> BWimage =  MakeBW(image);
 
     
-    // 5. Mapping happens here
-    std::vector<char> output = Map(reducedImage);
-
+    // 3. Dynamic selection of Xration and Yratio;
+    int xratio;
+    int yratio;
+    float originalRatio = width / height;
+    if(originalRatio < 0){
+        yratio = int(floor(width / 180));
+        xratio = int(yratio / 2);
+    } else {
+        xratio = int(floor(height / 256));
+        yratio = int(xratio * 2);
+    }
     
+    int newWidth = (xratio * (int)(width / xratio));
+    int newHeight = (yratio * (int)(height / yratio));
+    
+    // 4. Crop image
+    std::vector<int> croppedImage = CropImage( BWimage,  width,  height,  newWidth,  newHeight);
+   
+    // 5. Reduce and Map image to CHAR
+    std::vector<char> asciiImage = ReduceAndMap(croppedImage, newWidth, newHeight, xratio, yratio);
+
+
     // 6. Drawing in a file - Main output
-    WriteToFile(output, newWidth / 4, filename);
+    WriteToFile(asciiImage, newWidth / xratio, filename);
     
     // Reporting
     printf(" INPUT file: %s.png\n OUTPUT file: %s.txt\n\n", filename, filename);
-    printf(" ORIGINAL file width: %d, height %d, pixels: %d\n", width, height, (int)image.size() / 4);
-    printf(" BLACK & WHITE file width: %d, height %d, pixels: %d\n", width, height, (int)bwImage.size() );
-    printf(" CROPPED file width: %d, height %d, pixels: %d\n", newWidth, newHeight, (int)croppedImage.size() );
-    printf(" REDUCED file width: %d, height %d, pixels: %d\n", newWidth / 4, newHeight / 7, (int)reducedImage.size() );
-    printf(" MAPPED to ASCII vector<char> size is %d\n", (int)output.size() );
+    printf(" ORIGINAL     file width: %d, height %d, pixels: %d\n", width, height, (int)image.size() / 4); //4 refers TO RBGA
+    //printf(" PREPPED      file width: %d, height %d, pixels: %d\n", newWidth, newHeight, (int)cropeedImage.size() );
+    printf(" REDUCED text file width: %d, height %d, chars: %d\n\n", newWidth / xratio, newHeight / yratio, (int)asciiImage.size() );
+
     return 0;
 }
-
-
 
 
 // Getting a single Luminocity out of RGBA set. Using standard formula (0.2126*R + 0.7152*G + 0.0722*B)
@@ -90,7 +91,6 @@ std::vector<int> MakeBW(std::vector<unsigned char> image){
 }
 
 
-
 // Cropping an Image so that width is multiple of 4 and height of 7
 std::vector<int> CropImage(const std::vector<int> bwImage, int width, int height, int newWidth, int newHeight){
     std::vector<int> croppedImage;
@@ -100,69 +100,57 @@ std::vector<int> CropImage(const std::vector<int> bwImage, int width, int height
         std::copy(current, current + newWidth, std::back_inserter(croppedImage));
         current += width;
     }
-
+    
     return croppedImage;
 }
 
 
-
 // Reducing Image
-std::vector<int> ImageReduce(const std::vector<int> image, int width, int height, int numElem){
+std::vector<char> ReduceAndMap(const std::vector<int> image, int width, int height, int xratio, int yratio){
     
-    std::vector<int> reducedImage;
-    int xP = 0; // an unfortunate name for a variable, what's the better name for it??
+    std::vector<char> mappedImage;
+    int xP = 0; // an unfortunatly named variable, what's the better name for it??
     int sum = 0;
     
     // Row block treversal
-    for(int y = 0; xP < image.size() - (7 * width); y++){
+    for(int y = 0; xP < image.size() - (yratio * width); y++){
         
         // Colomn block treversal
-        for(int x = 0; x < (width / 4); x++){
+        for(int x = 0; x < (width / xratio); x++){
             
             // Rows traversal
-            for(int i = 0; i < 7; i++){
+            for(int i = 0; i < yratio; i++){
                 
                 // Colomn treversal
-                for(int j = 0; j < 4; j++){
+                for(int j = 0; j < xratio; j++){
                     sum += image.at(xP + j);
                 }
                 
                 xP += width;
             }
             
-            // recording 4 * 7 pixels average
-            int average = (int)sum / (4 * 7);
-            reducedImage.push_back( average );
+            // Getting average and mapping to CHAR
+            int average = (int)sum / (xratio * yratio);
+            mappedImage.push_back( pixelToChar(average) );
             
             // reposition & reset
+            xP = xP - (yratio * width) + xratio; // ход конем
             sum = 0;
-            xP = xP - ( 7 * width) + 4; // ход конем
         }
         
 
-        xP += (7 * width);
+        xP += (yratio * width);
     }
-    return reducedImage;
+    return mappedImage;
 }
 
 
 // Mapping to ASCII
-std::vector<char> Map(const std::vector<int> image){
-    
+char pixelToChar(int pixel) {
     // Original 70 char $@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`'.
     // Original 10 char {'@', '%', '#', '*', '+', '=', '-', ':', '.', ' ',' ' };
-
-    // Special blend of 14 chars, mee-favourite :)
     char map[] {'W', '#', '@', '0', '&', '%', '*', 'z', '=', '+', '_', ',', '.', ' ' };
-    
-    std::vector<char> output;
-    
-    for(int i=0; i< image.size(); i++){
-        int pixel = image.at(i);
-        char character = map[int(floor(pixel / (255 / (sizeof(map) - 1))))];
-        output.push_back(character);
-    }
-    return output;
+    return map[int(floor(pixel / (255 / (sizeof(map) - 1))))];
 }
 
 
