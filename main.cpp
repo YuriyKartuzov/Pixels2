@@ -20,7 +20,7 @@ int main(int argc, const char * argv[])
     // Live processing - live.cpp
     if( !strcmp(argv[1], "live")){
         char size[10];
-        strcpy(size, "small");
+        strcpy(size, "medium");
 
         int deviceNum = 0;
 

@@ -22,8 +22,8 @@ void liveVideoProcessing(int deviceNum, char * size){
         namedWindow("edges",1);
 
         // Set Video frame dimentions
-        cam.set(CAP_PROP_FRAME_WIDTH, 640);
-        cam.set(CAP_PROP_FRAME_HEIGHT, 480);
+        //cam.set(CAP_PROP_FRAME_WIDTH, 640);
+        //cam.set(CAP_PROP_FRAME_HEIGHT, 480);
 
         Mat testFrame;
         cam >> testFrame;

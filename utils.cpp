@@ -13,16 +13,16 @@ vector<char> reduceAndMap(
     int horozinalFactor, verticalFactor;
 
     if( !strcmp(size, "small")) { 
-        horozinalFactor = 120; 
-        verticalFactor = 100;
+        horozinalFactor = 100; 
+        verticalFactor = 80;
     }
     else if(! strcmp(size, "medium")){
         horozinalFactor = 190; 
         verticalFactor = 140;
     }
     else { // Large
-        horozinalFactor = 270;
-        verticalFactor = 180;
+        horozinalFactor = 370;
+        verticalFactor = 280;
     }
 
     // Calculate dimentions for chunk to average
@@ -107,8 +107,9 @@ vector<unsigned char> asciiToPixels(vector<char>a, int & asciiWidth, int & ascii
     // Main output variable
     vector<unsigned char> pixels;
 
-    int letterWidth = 13;
-    int letterHeight = 18;
+    // Large font 13/18 pixels
+    int letterWidth = 8;
+    int letterHeight = 14;
 
     // Letter initialization
     vector< vector<unsigned char> > letterMap = getPixelsForLetter();
