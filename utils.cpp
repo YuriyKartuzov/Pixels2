@@ -54,7 +54,7 @@ int loadCharacters(Mat *characters, int & fontX, int & fontY)
     int numOfFiles = sizeof(files) / sizeof(files[0]);
     for (int i = 0; i < numOfFiles; i++)
     {
-        characters[i] = cv::imread(base + files[i] + extension, CV_LOAD_IMAGE_GRAYSCALE);
+        characters[i] = cv::imread(base + files[i] + extension, cv::IMREAD_GRAYSCALE);
 
         if (!characters[i].data)
             return 0;
@@ -175,7 +175,7 @@ vector<vector<unsigned char> > getPixelsForLetter(){
 
     try{
         for(int i=0; i<14; i++){
-            Mat mat = imread(base + files[i] + extension, CV_LOAD_IMAGE_GRAYSCALE);
+            Mat mat = imread(base + files[i] + extension, cv::IMREAD_GRAYSCALE);
             if(!mat.data){
                 cerr << "ERROR: file [" << base + files[i] + extension << "] could not be read\n";
                 throw;
