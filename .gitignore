@@ -3,3 +3,4 @@ pixels
 .vscode
 *\.txt
 output
+pixels.dSYM/
