@@ -1,6 +1,72 @@
 #include "utils.h"
-
 using namespace cv;
+
+void imageProcessing(const unsigned char * image, unsigned char * output, const cv::Mat characters[], int width, int height, int chunkWidth, int chunkHeight, int numOfChars ){
+
+    for (int row = width * chunkHeight; row < (width * height); row += width * chunkHeight){
+        for (int column = 0; column < width; column += chunkWidth){
+            
+            int sum = 0;
+            
+            // Iterate over for a chunk
+            for (int x = 0; x < chunkHeight; x++){
+                for (int y = 0; y < chunkWidth; y++){
+
+                    int rowIndex = row - width * chunkHeight;
+                    int colIndex = column + y + (x * width);
+                    sum += image[rowIndex + colIndex];
+
+                }
+            }
+
+            // Get average
+            int luminocity = sum / (chunkWidth * chunkHeight);
+
+            // Cast luminocity into range and turn into index
+            int charIndex = floor(luminocity / (255 / numOfChars));         
+            // Fix out of bound index. TODO possible rework of formula above
+            if(charIndex >= numOfChars) charIndex = numOfChars - 1 ;
+            
+
+            // Write new ascii in pixels
+            for (int x = 0; x < chunkHeight; x++){
+                for (int y = 0; y < chunkWidth; y++){
+
+                    int rowIndex = row - width * chunkHeight;
+                    int colIndex = (column + y + x * width);
+                    unsigned char pixel = characters[charIndex].at<unsigned char>(y + x * chunkWidth);
+                    output[rowIndex + colIndex] = pixel;
+
+                }
+            }
+        }
+    }
+}
+
+
+// Reading files with char
+int loadCharacters(Mat *characters, int & fontX, int & fontY)
+{
+    string base = "./chars/";
+    string files[] = {"At", "W", "Pound", "Zero", "Amp", "Perc", "Star", "Zed", "Equal", "Plus", "Under", "Comma", "Period", "Space"};
+    string extension = ".png";
+
+    int numOfFiles = sizeof(files) / sizeof(files[0]);
+    for (int i = 0; i < numOfFiles; i++)
+    {
+        characters[i] = cv::imread(base + files[i] + extension, CV_LOAD_IMAGE_GRAYSCALE);
+
+        if (!characters[i].data)
+            return 0;
+        
+    }
+
+    fontX = characters[0].cols;
+    fontY = characters[0].rows;
+
+    return numOfFiles;
+}
+
 
 vector<char> reduceAndMap(
         vector<int>imageV, int  width, int height, int & newW, int & newH, int & asciiW, int & asciiH, int & xr, int & yr, char * size){
@@ -41,7 +107,7 @@ vector<char> reduceAndMap(
     // Crop immage to be multiple of xratio and yratio
     vector<int> croppedImage;
     vector<int>::const_iterator current = imageV.begin();
-    for(int i = 0 ; i < height; i++){
+    for(int i = 0 ; i < newHeight; i++){
         copy(current, current + newWidth, std::back_inserter(croppedImage));
         current += width;
     }
@@ -86,8 +152,6 @@ vector<char> reduceAndMap(
     return mappedImage;
 }
 
-
-
 // Mapping to ASCII --------------------------------------------------------------
 char pixelToChar(int pixel, bool reverse) {
    
@@ -100,56 +164,6 @@ char pixelToChar(int pixel, bool reverse) {
         return regularMap[int(pixel / (255 / (sizeof(regularMap) - 1)))];
 }
 
-
-// Pixelsfrom ascii char    --------------------------------------------------------------
-vector<unsigned char> asciiToPixels(vector<char>a, int & asciiWidth, int & asciiHeight, int &finalHeight, int & finalWidth){
-
-    // Main output variable
-    vector<unsigned char> pixels;
-
-    // Large font 13/18 pixels
-    int letterWidth = 8;
-    int letterHeight = 14;
-
-    // Letter initialization
-    vector< vector<unsigned char> > letterMap = getPixelsForLetter();
-
-    
-    // Go through each line of ASCII chars
-    for(int c=0; c < asciiHeight; c++){
-
-        vector<unsigned char> line (a.begin() + (c * asciiWidth), a.begin() + (c * asciiWidth) + asciiWidth);
-
-        for(int x=0; x< letterHeight; x++){
-
-            // Iterating over a line of letters
-            for(int i=0; i<line.size(); i++){
-
-                for(int j=0; j<letterWidth; j++){
-                    if(line.at(i) == 'W') pixels.push_back(letterMap.at(0).at(x*letterWidth + j));
-                    if(line.at(i) == '#') pixels.push_back(letterMap.at(1).at(x*letterWidth + j));
-                    if(line.at(i) == '@') pixels.push_back(letterMap.at(2).at(x*letterWidth + j));
-                    if(line.at(i) == '0') pixels.push_back(letterMap.at(3).at(x*letterWidth + j));
-                    if(line.at(i) == '&') pixels.push_back(letterMap.at(4).at(x*letterWidth + j));
-                    if(line.at(i) == '%') pixels.push_back(letterMap.at(5).at(x*letterWidth + j));
-                    if(line.at(i) == '*') pixels.push_back(letterMap.at(6).at(x*letterWidth + j));
-                    if(line.at(i) == 'z') pixels.push_back(letterMap.at(7).at(x*letterWidth + j));
-                    if(line.at(i) == '=') pixels.push_back(letterMap.at(8).at(x*letterWidth + j));
-                    if(line.at(i) == '+') pixels.push_back(letterMap.at(9).at(x*letterWidth + j));
-                    if(line.at(i) == '_') pixels.push_back(letterMap.at(10).at(x*letterWidth + j));
-                    if(line.at(i) == ',') pixels.push_back(letterMap.at(11).at(x*letterWidth + j));
-                    if(line.at(i) == '.') pixels.push_back(letterMap.at(12).at(x*letterWidth + j));
-                    if(line.at(i) == ' ') pixels.push_back(letterMap.at(13).at(x*letterWidth + j));
-                }
-            }
-        }
-    }
-
-    finalWidth =  asciiWidth * letterWidth;
-    finalHeight = pixels.size() / finalWidth;
-
-    return pixels;
-}
 
 // Reading files for a letter  --------------------------------------------------------------
 vector<vector<unsigned char> > getPixelsForLetter(){
@@ -176,4 +190,5 @@ vector<vector<unsigned char> > getPixelsForLetter(){
 
     return map;
 }
+
 

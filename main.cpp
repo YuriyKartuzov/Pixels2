@@ -1,9 +1,13 @@
 #include <iostream>
+#include <omp.h>
+#include <cstring>
+
 using namespace std;
 
 // Prototypes
-void liveVideoProcessing(int deviceNum, char * size);
-void imageProcessing(const char *filename, char * size);
+void live(int argc, const char * argv[]);
+void video(int argc, const char * argv[]);
+void imageProcessing(const char * filename, char * size);
 
 //MAIN
 int main(int argc, const char * argv[])
@@ -19,15 +23,16 @@ int main(int argc, const char * argv[])
 
     // Live processing - live.cpp
     if( !strcmp(argv[1], "live")){
-        char size[10];
-        strcpy(size, "medium");
+        live(argc, argv);
+    }
 
-        int deviceNum = 0;
-
-        if(argc == 3)
-            deviceNum = atoi(argv[2]);
-\
-        liveVideoProcessing(deviceNum, size); 
+    // Video processing - video.cpp
+    if( !strcmp(argv[1], "video")){
+        if(argc < 3){
+            cerr << "Missing video filename. MP4 extention is assumed";
+            return -1;
+        }
+        video(argc, argv);
     }
 
     // Image processing - image.cpp
@@ -40,11 +45,6 @@ int main(int argc, const char * argv[])
             strcpy(size, "large");
 
         imageProcessing(argv[2], size); // passing in filename and size
-    }
-
-    // Video processing - video.cpp
-    if( !strcmp(argv[1], "video")){
-        // add function //passing in filename
     }
 
     return 0;

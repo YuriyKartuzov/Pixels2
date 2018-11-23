@@ -1,78 +1,102 @@
 #include "utils.h"
+#include <omp.h>
 
 using namespace std;
 using namespace cv;
 
-void liveVideoProcessing(int deviceNum, char * size){
+void live(int argc, const char * argv[]){
+    // Setting up camera identified
+    int deviceNum = 0;
+    int frameWidth = 640;
+    int frameHeight = 480;
 
+    if(argc == 3)
+        deviceNum = atoi(argv[2]);
 
-    // Video feed
-    try{
-        VideoCapture cam(deviceNum); // open the default camera
-        // Check if camera opened successfully
-        if(!cam.isOpened()){
-            cout << "Error opening video stream\n" << endl;
-            return;
-        }
+    if(argc == 4 && !strcmp(argv[3], "large")){
+        frameWidth = 1280;
+        frameHeight = 780;
+        deviceNum = atoi(argv[2]);
+    }
 
-        // Define frame objects
-        Mat frame, grey;
-        
-        // Add a window
-        namedWindow("edges",1);
-
-        // Set Video frame dimentions
-        //cam.set(CAP_PROP_FRAME_WIDTH, 640);
-        //cam.set(CAP_PROP_FRAME_HEIGHT, 480);
-
-        Mat testFrame;
-        cam >> testFrame;
-        if(cam.get(CAP_PROP_FRAME_WIDTH) != testFrame.cols || cam.get(CAP_PROP_FRAME_HEIGHT) != testFrame.rows){
-            cout << "Video feed dimention issues\n";
-            return;
-        }
-
-        //VideoWriter video("images/JPout.avi",CV_FOURCC('M','J','P','G'),10, Size(1820, 714));
-
-        while(1){
-            // Get single frame
-            cam >> frame; 
-
-            // Turn into black and white
-            cvtColor(frame, grey, COLOR_BGR2GRAY);
-            int width = cam.get(CAP_PROP_FRAME_WIDTH);
-            int height = cam.get(CAP_PROP_FRAME_HEIGHT);
-
-            //Insert processing here
-            vector<int> originalImage(grey.begin<unsigned char>(), grey.end<unsigned char>());
-
-            // These variables will  be updated in the following function
-            int xratio, yratio, newWidth, newHeight, asciiWidth, asciiHeight;
-            vector<char> reduced = reduceAndMap(originalImage, width, height, newWidth, newHeight, asciiWidth, asciiHeight, xratio, yratio, size);
-
-            // Create vector of pixels based on ascii chars, variables below are updated in the functin
-            int finalWidth, finalHeight;
-            vector<unsigned char> pixels = asciiToPixels(reduced, asciiWidth, asciiHeight, finalWidth,  finalHeight);
-
-            // Create a frame made out of pixels
-            Mat processedFrame (finalWidth, finalHeight, CV_8UC1, pixels.data());
-
-            // Show frame
-            imshow("edges", processedFrame);
-
-            // Save to file
-            //video.write(mm);
-            
-            // Some shit that's required to show the frame
-            if (waitKey(1) >= 0)
-                break;
-
-        } 
-
-    } catch(Exception e){
-        cerr << "ERROR(live.cpp): Video device [" << deviceNum << "] cannot be accessed.\n";
+    // Video feed, Access camera and validation
+    VideoCapture cam(deviceNum); 
+    if(!cam.isOpened()){
+        cout << "Error opening video stream\n" << endl;
         return;
     }
 
-    return;
+    // Set frame dimentions
+    cam.set(CAP_PROP_FRAME_WIDTH, frameWidth);
+    cam.set(CAP_PROP_FRAME_HEIGHT, frameHeight);
+
+    //Check frame dimentions set by openCV
+    int originalWidth = cam.get(CAP_PROP_FRAME_WIDTH);
+    int originalHeight = cam.get(CAP_PROP_FRAME_HEIGHT);
+    int width, height;
+    
+    cout << "frame width " << frameWidth << ", frame height " << frameHeight << endl;
+    cout << "original width " << originalWidth << ", original height " << originalHeight << endl;
+    // Reading char files and creating matrix of ascii pixels, and updating fontWidth and fontHeight vars below
+    int fontWidth;
+    int fontHeight;
+    Mat *characters = new Mat[14];
+    int numOfChars = loadCharacters(characters, fontWidth, fontHeight);
+
+    // Calculating new width and height for frame resizing
+    if(originalWidth % fontWidth == 0)
+        width = originalWidth;
+    else
+        width = int(originalWidth / fontWidth) * fontWidth;
+    
+    if(originalHeight % fontHeight == 0)
+        height = originalHeight;
+    else
+        height = int(originalHeight / fontHeight) * fontHeight;
+
+    // Output frame
+    unsigned char * output = new unsigned char[width * height];
+    
+
+    // Video writer
+    //remove("liveout.mp4");
+    //cv::namedWindow("Live shit", cv::WINDOW_AUTOSIZE);
+    //VideoWriter videoOut("liveout.mp4", CV_FOURCC('m','j','p','g'), 25, Size(width, height), 0); 
+
+
+    // MAIN VIDEO STREAM PROCESSING
+    while(1){
+        Mat frame, cropped;   
+        bool isSuccess = cam.read(frame);
+        if(!isSuccess)
+            break;
+            
+        // Turn into black and white
+        cv::cvtColor(frame, frame, COLOR_BGR2GRAY);
+
+        // Crop the image
+        cv::resize(frame, cropped, cv::Size(width, height), 0, 0, INTER_CUBIC);
+
+        //Processing - output is updated. TIME THIS FUNCTION
+        imageProcessing(cropped.data, output, characters, width, height, fontWidth, fontHeight, numOfChars);
+
+        // Create new frame with output
+        cv::Mat processedFrame (height, width, CV_8UC1, output);
+        
+        // Show frame
+        cv::imshow("Live Stream Processing", processedFrame);
+        //videoOut.write(processedFrame);
+
+        // Escape
+        if (waitKey(10) == 27)
+            break;
+    } 
+
+    //video.release();
 }
+
+
+
+
+
+
