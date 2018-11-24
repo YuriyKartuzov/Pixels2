@@ -59,7 +59,6 @@ void video(int argc, const char * argv[]){
     remove(fileOut);
     VideoWriter videoOut(fileOut, VideoWriter::fourcc('m','p','4','v'), videoIn.get(CAP_PROP_FPS), Size(width, height), 0);
 
-
 	// MAIN VIDEO STREAM PROCESSING
 	int c = 0;
 	int cc = 0;
@@ -104,6 +103,7 @@ void video(int argc, const char * argv[]){
 		// Write to file
 		videoOut.write(processedFrame);
 	}
+
 
     videoOut.release();
 }
