@@ -3,6 +3,7 @@ using namespace cv;
 
 void imageProcessing(const unsigned char * image, unsigned char * output, const cv::Mat characters[], int width, int height, int chunkWidth, int chunkHeight, int numOfChars ){
 
+#pragma omp parallel for
     for (int row = width * chunkHeight; row < (width * height); row += width * chunkHeight){
         for (int column = 0; column < width; column += chunkWidth){
             
@@ -44,9 +45,22 @@ void imageProcessing(const unsigned char * image, unsigned char * output, const 
 }
 
 
+unsigned char * cropImage(unsigned char * data, int originalW, int originalH, int width, int height) {
+
+	unsigned char * cropped = new unsigned char[width * height];
+
+#pragma omp parallel for
+	for (int i = 0; i < originalH; i++)
+		for (int k = 0; k < originalW; k++)
+			if (k < width && i < height)
+				cropped[k + i * width] = data[k + i * originalW];
+
+	return cropped;
+}
+
+
 // Reading files with char
-int loadCharacters(Mat *characters, int & fontX, int & fontY)
-{
+int loadCharacters(Mat * characters, int & fontX, int & fontY){
     string base = "./chars/";
     string files[] = {"At", "W", "Pound", "Zero", "Amp", "Perc", "Star", "Zed", "Equal", "Plus", "Under", "Comma", "Period", "Space"};
     string extension = ".png";
@@ -54,7 +68,7 @@ int loadCharacters(Mat *characters, int & fontX, int & fontY)
     int numOfFiles = sizeof(files) / sizeof(files[0]);
     for (int i = 0; i < numOfFiles; i++)
     {
-        characters[i] = cv::imread(base + files[i] + extension, CV_LOAD_IMAGE_GRAYSCALE);
+        characters[i] = cv::imread(base + files[i] + extension, cv::IMREAD_GRAYSCALE);
 
         if (!characters[i].data)
             return 0;
@@ -175,7 +189,7 @@ vector<vector<unsigned char> > getPixelsForLetter(){
 
     try{
         for(int i=0; i<14; i++){
-            Mat mat = imread(base + files[i] + extension, CV_LOAD_IMAGE_GRAYSCALE);
+            Mat mat = imread(base + files[i] + extension, cv::IMREAD_GRAYSCALE);
             if(!mat.data){
                 cerr << "ERROR: file [" << base + files[i] + extension << "] could not be read\n";
                 throw;

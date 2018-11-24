@@ -21,10 +21,12 @@ int main(int argc, const char * argv[])
         return -1;
     }
 
+
     // Live processing - live.cpp
     if( !strcmp(argv[1], "live")){
         live(argc, argv);
     }
+
 
     // Video processing - video.cpp
     if( !strcmp(argv[1], "video")){
@@ -34,6 +36,7 @@ int main(int argc, const char * argv[])
         }
         video(argc, argv);
     }
+
 
     // Image processing - image.cpp
     if( !strcmp(argv[1], "image")){

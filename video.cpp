@@ -4,6 +4,7 @@
 
 using namespace std;
 using namespace cv;
+using namespace chrono;
 
 void video(int argc, const char * argv[]){
 
@@ -56,30 +57,53 @@ void video(int argc, const char * argv[]){
     
     // Video writer
     remove(fileOut);
-    VideoWriter videoOut(fileOut, CV_FOURCC('m','j','p','g'), videoIn.get(CAP_PROP_FPS), Size(width, height), 0);  
+    VideoWriter videoOut(fileOut, VideoWriter::fourcc('m','p','4','v'), videoIn.get(CAP_PROP_FPS), Size(width, height), 0);
 
-    // MAIN VIDEO STREAM PROCESSING
-    while(1){
-        Mat frame, cropped;   
-        bool isSuccess = videoIn.read(frame);
-        if(!isSuccess)
-            break;
-            
-        // Turn into black and white
-        cv::cvtColor(frame, frame, COLOR_BGR2GRAY);
 
-        // Crop the image
-        cv::resize(frame, cropped, cv::Size(width, height), 0, 0, INTER_CUBIC);
+	// MAIN VIDEO STREAM PROCESSING
+	int c = 0;
+	int cc = 0;
+	while (1) {
+		c++;
+		cc++;
+		Mat frame, cropped, bw;
+		bool isSuccess = videoIn.read(frame);
+		if (!isSuccess)
+			break;
 
-        //Processing - output is updated
-        imageProcessing(cropped.data, output, characters, width, height, fontWidth, fontHeight, numOfChars);
+		// Turn into black and white
+		auto start = high_resolution_clock::now();
+		cv::cvtColor(frame, bw, COLOR_BGR2GRAY);
+		if (c % 30 == 0) {
+			auto micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
+			cout << "FRAME: " << cc << endl;
+			cout << "OpenCV turned Color to Greyscale in : " << micro << " micro - seconds\n";
+		}
 
-        // Create new frame with output
-        cv::Mat processedFrame (height, width, CV_8UC1, output);
-        
-        // Write to file
-        videoOut.write(processedFrame);   
-    } 
+		// Crop the image
+		start = high_resolution_clock::now();
+		//cv::resize(bw, cropped, cv::Size(width, height), 0, 0, INTER_CUBIC); COMPARED 500 vs 200 microsecs for mine
+		unsigned char * croppedImage = cropImage(bw.data, originalWidth, originalHeight, width, height);
+		if (c % 30 == 0) {
+			auto micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
+			cout << "My cropping version did it in: " << micro << " micro-seconds\n";
+		}
+
+		start = high_resolution_clock::now();
+		//Processing - output is updated. TIME THIS FUNCTION
+		imageProcessing(croppedImage, output, characters, width, height, fontWidth, fontHeight, numOfChars);
+		if (c % 30 == 0) {
+			auto micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
+			cout << "Frame processed in: " << micro << " micro-seconds\n\n";
+			c = 0;
+		}
+
+		// Create new frame with output
+		cv::Mat processedFrame(height, width, CV_8UC1, output);
+
+		// Write to file
+		videoOut.write(processedFrame);
+	}
 
     videoOut.release();
 }

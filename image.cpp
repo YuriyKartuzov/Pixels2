@@ -15,7 +15,7 @@ void imageProcessing(const char * fn, char * size){
 
     try{
 
-        Mat im = imread(fileIn, CV_LOAD_IMAGE_GRAYSCALE);
+        Mat im = imread(fileIn, cv::IMREAD_GRAYSCALE);
         if(!im.data){
             cerr << "ERROR: file [" << fileIn << "] could not be read\n";
             return;
