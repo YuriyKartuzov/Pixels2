@@ -3,7 +3,7 @@ using namespace cv;
 
 void imageProcessing(const unsigned char * image, unsigned char * output, const cv::Mat characters[], int width, int height, int chunkWidth, int chunkHeight, int numOfChars ){
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(dynamic)
     for (int row = width * chunkHeight; row < (width * height); row += width * chunkHeight){
         for (int column = 0; column < width; column += chunkWidth){
             

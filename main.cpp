@@ -43,9 +43,9 @@ int main(int argc, const char * argv[])
         char size[10];
         
         if(argc == 4) 
-            strcpy(size, argv[3]);
+            strcpy_s(size, argv[3]);
         else 
-            strcpy(size, "large");
+            strcpy_s(size, "large");
 
         imageProcessing(argv[2], size); // passing in filename and size
     }

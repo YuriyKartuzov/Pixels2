@@ -8,10 +8,10 @@ void imageProcessing(const char * fn, char * size){
     // File names
     char fileIn[80];
     char fileOut[80];
-    strcpy(fileIn, fn);
-    strcpy(fileOut, fn);
-    strcat(fileIn, ".png");
-    strcat(fileOut, ".txt");
+    strcpy_s(fileIn, fn);
+    strcpy_s(fileOut, fn);
+    strcat_s(fileIn, ".png");
+    strcat_s(fileOut, ".txt");
 
     try{
 
