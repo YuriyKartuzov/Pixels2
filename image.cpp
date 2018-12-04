@@ -3,15 +3,22 @@
 using namespace std;
 using namespace cv;
 
-void imageProcessing(const char * fn, char * size){
+void imageProcessing(const char * fn){
+
+    const string size = "large";
 
     // File names
-    char fileIn[80];
-    char fileOut[80];
-    strcpy_s(fileIn, fn);
-    strcpy_s(fileOut, fn);
-    strcat_s(fileIn, ".png");
-    strcat_s(fileOut, ".txt");
+    string fileIn = fn;
+    fileIn += ".png";
+
+    string fileOut = fn;
+    fileOut += ".txt";
+    // char fileIn[80];
+    // char fileOut[80];
+    // strcpy_s(fileIn, fn);
+    // strcpy_s(fileOut, fn);
+    // strcat_s(fileIn, ".png");
+    // strcat_s(fileOut, ".txt");
 
     try{
 
@@ -29,7 +36,7 @@ void imageProcessing(const char * fn, char * size){
 
         // Map function. These variables will be updated in the following function
         int xratio, yratio, newWidth, newHeight, asciiWidth, asciiHeight;
-        vector<char> ascii = reduceAndMap(originalImage, width, height, newWidth, newHeight, asciiWidth, asciiHeight, xratio, yratio, size);
+        vector<char> ascii = reduceAndMap(originalImage, width, height, newWidth, newHeight, asciiWidth, asciiHeight, xratio, yratio, size.c_str());
 
         // Write to file
         std::ofstream myfile (fileOut);

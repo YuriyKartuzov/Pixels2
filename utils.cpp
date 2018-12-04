@@ -83,7 +83,7 @@ int loadCharacters(Mat * characters, int & fontX, int & fontY){
 
 
 vector<char> reduceAndMap(
-        vector<int>imageV, int  width, int height, int & newW, int & newH, int & asciiW, int & asciiH, int & xr, int & yr, char * size){
+        vector<int>imageV, int  width, int height, int & newW, int & newH, int & asciiW, int & asciiH, int & xr, int & yr, const char * size){
 
     std::vector<char> mappedImage;
     int xP = 0; // Main index for treversing the image

@@ -58,7 +58,7 @@ void live(int argc, const char * argv[]) {
 	unsigned char * output = new unsigned char[width * height];
 
 	// REPORT
-	printf("Pixels 2.0 program: LIVE!\nFrame width: %d, height: %d, framerate: %d\n", originalWidth, originalHeight, cam.get(CAP_PROP_FPS));
+	printf("Pixels 2.0 program: LIVE!\nFrame width: %d, height: %d\n", originalWidth, originalHeight);
 
 	// Video writer
 	// remove("liveout.mp4");
@@ -87,8 +87,8 @@ void live(int argc, const char * argv[]) {
 		auto start = high_resolution_clock::now();
 		cv::cvtColor(frame, bw, COLOR_BGR2GRAY);
 		if (c % sampleRate == 0) {
-			auto micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
-			printf("Frame #: %d, OpenCV toGrey(): %d,", cc, micro);
+			long long micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
+			printf("Frame #: %d, OpenCV toGrey(): %lld,", cc, micro);
 			greyT += micro;
 		}
 
@@ -97,8 +97,8 @@ void live(int argc, const char * argv[]) {
 		//cv::resize(bw, cropped, cv::Size(width, height), 0, 0, INTER_CUBIC); COMPARED 500 vs 200 microsecs for mine
 		unsigned char * croppedImage = cropImage(bw.data, originalWidth, originalHeight, width, height);
 		if (c % sampleRate == 0) {
-			auto micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
-			printf(" crop(): %d,", micro);
+			long long micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
+			printf(" crop(): %lld,", micro);
 			cropT += micro;
 		}
 
@@ -106,8 +106,8 @@ void live(int argc, const char * argv[]) {
 		//Processing - output is updated. TIME THIS FUNCTION
 		imageProcessing(croppedImage, output, characters, width, height, fontWidth, fontHeight, numOfChars);
 		if (c % sampleRate == 0) {
-			auto micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
-			printf(" toASCII(): %d micro-seconds.\n", micro);
+			long long micro = duration_cast<microseconds>(high_resolution_clock::now() - start).count();
+			printf(" toASCII(): %lld micro-seconds.\n", micro);
 			c = 0;
 			proccT += micro;
 		}

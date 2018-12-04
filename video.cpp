@@ -10,17 +10,24 @@ void video(int argc, const char * argv[]){
 
     // Setting up file names
     const char * filename = argv[2];
+    string fileIN = "./input/";
+    fileIN += argv[2];
+    fileIN += ".mp4";
+    
+    string fileOUT = "./output/";
+    fileOUT += argv[2];
+    fileOUT += "OUT.mp4";
 
-    char fileIn[80] = "./input/";
-    strcat_s(fileIn, filename);  
-    strcat_s(fileIn, ".mp4");
+    // char fileIn[80] = "./input/";
+    // strcat_s(fileIn, filename);  
+    // strcat_s(fileIn, ".mp4");
 
-    char fileOut[80] = "./output/";
-    strcat_s(fileOut, filename);
-    strcat_s(fileOut, "OUT.mp4");
+    // char fileOut[80] = "./output/";
+    // strcat_s(fileOut, filename);
+    // strcat_s(fileOut, "OUT.mp4");
 
     // Video feeds from camera and validation
-    VideoCapture videoIn(fileIn); 
+    VideoCapture videoIn(fileIN); 
     if(!videoIn.isOpened()){
         cout << "Error opening video file\n" << endl;
         return;
@@ -52,8 +59,8 @@ void video(int argc, const char * argv[]){
     unsigned char * output = new unsigned char[width * height];
     
     // Video writer
-    remove(fileOut);
-    VideoWriter videoOut(fileOut, VideoWriter::fourcc('m','p','4','v'), videoIn.get(CAP_PROP_FPS), Size(width, height), 0);
+    remove(fileOUT.c_str());
+    VideoWriter videoOut(fileOUT, VideoWriter::fourcc('m','p','4','v'), videoIn.get(CAP_PROP_FPS), Size(width, height), 0);
 
 	// REPORT
 	printf("Pixels 2.0 program: VIDEO Processing.\n");

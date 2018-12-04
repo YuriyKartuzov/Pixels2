@@ -5,7 +5,7 @@
 #include <fstream>
 #include <chrono>
 #include <math.h>
-#include "string.h"
+#include <string.h>
 
 using namespace std;
 
@@ -19,7 +19,7 @@ unsigned char * cropImage(unsigned char * data, int originalW, int originalH, in
 char pixelToChar(int pixel, bool reverse);
 
 // Reduce a rectangle of pixels to a single averaged value
-vector<char> reduceAndMap(vector<int>imageV, int  w, int h, int & nW, int & nH, int & aW, int & aH, int & x, int & y, char * size);
+vector<char> reduceAndMap(vector<int>imageV, int  w, int h, int & nW, int & nH, int & aW, int & aH, int & x, int & y, const char * size);
 
 // Map a single character to pixel representation
 vector<unsigned char> asciiToPixels(vector<char>a, int & aW, int & aH, int & fW, int & fH);

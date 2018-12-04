@@ -7,7 +7,7 @@ using namespace std;
 // Prototypes
 void live(int argc, const char * argv[]);
 void video(int argc, const char * argv[]);
-void imageProcessing(const char * filename, char * size);
+void imageProcessing(const char * filename);
 
 //MAIN
 int main(int argc, const char * argv[])
@@ -41,13 +41,15 @@ int main(int argc, const char * argv[])
     // Image processing - image.cpp
     if( !strcmp(argv[1], "image")){
         char size[10];
+        string size1 = "large";
         
         if(argc == 4) 
-            strcpy_s(size, argv[3]);
-        else 
-            strcpy_s(size, "large");
+            //strcpy_s(size, argv[3]);
+            size1 = argv[3];
+        //else 
+            //strcpy_s(size, "large");
 
-        imageProcessing(argv[2], size); // passing in filename and size
+        imageProcessing(argv[2]); // passing in filename and size
     }
 
     return 0;
